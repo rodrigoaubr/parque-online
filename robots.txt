@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://parque-online.com/sitemap.xml
