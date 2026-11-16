@@ -6,9 +6,9 @@
 <title>Parque Online | Apareça no Google e receba clientes no WhatsApp</title>
 <meta name="description" content="Perfil no Google, redes sociais, anúncios, site e automação de WhatsApp para negócios com loja, consultório ou escritório. Mais de 100 clientes atendidos no Rio e online.">
 <link rel="icon" href="logo.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="bricolage.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="dmsans.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts.css">
 
 <!-- SEO: LocalBusiness. Sem endereço público (o endereço é só de registro). -->
 <script type="application/ld+json">
@@ -25,8 +25,9 @@
 </script>
 
 <!--
-  META PIXEL: cole aqui o código base do pixel (com o seu ID) antes de ligar o anúncio.
-  Os cliques de WhatsApp já disparam fbq('track','Contact',{secao}) se o pixel existir (ver script no fim).
+  META PIXEL: NÃO cole o código base aqui. Ele só pode carregar depois do aceite de cookies.
+  Preencha a constante PIXEL_ID no script no fim da página; o resto já está pronto
+  (carrega após o aceite e dispara fbq('track','Contact',{secao}) nos botões de WhatsApp).
 -->
 
 <style>
@@ -225,6 +226,9 @@ details .answer{padding:0 0 1.4rem;color:var(--text)}
 .site-footer .contact a{text-decoration:none;color:var(--ink);font-weight:500}
 .site-footer .contact a:hover{color:var(--blue);text-decoration:underline}
 .site-footer small{width:100%;color:var(--muted)}
+.site-footer .legal{display:flex;flex-wrap:wrap;gap:.35rem 1.5rem;font-size:.95rem}
+.site-footer .legal a{color:var(--ink);font-weight:500}
+.site-footer .legal a:hover{color:var(--blue)}
 
 /* ============ BARRA FIXA (mobile) ============ */
 .sticky-bar{
@@ -279,6 +283,20 @@ details .answer{padding:0 0 1.4rem;color:var(--text)}
 @media (max-width:900px){
   .search{left:4%;bottom:-4%;width:88%}
 }
+
+/* ============ AVISO DE COOKIES ============ */
+.cookie{
+  position:fixed;left:16px;bottom:16px;z-index:60;max-width:460px;
+  background:var(--white);border-radius:20px;padding:1.1rem 1.25rem;
+  box-shadow:0 24px 50px -18px rgba(21,18,94,.55),0 0 0 1px rgba(21,18,94,.1);
+}
+.cookie[hidden]{display:none}
+.cookie p{margin:0;font-size:.98rem;line-height:1.5;color:var(--text)}
+.cookie p + p{margin-top:.4rem}
+.cookie-actions{display:flex;gap:.6rem;margin-top:.9rem}
+.cookie .btn{flex:1;padding:.7rem 1rem;font-size:.98rem;width:auto}
+body.cookie-open .sticky-bar{display:none}
+@media (max-width:560px){.cookie{left:10px;right:10px;bottom:10px}}
 
 /* ============ RESPONSIVO ============ */
 @media (max-width:900px){
@@ -564,9 +582,23 @@ details .answer{padding:0 0 1.4rem;color:var(--text)}
       <a href="mailto:rodrigo@parque-online.com?subject=Contato%20pelo%20site%20da%20Parque%20Online">rodrigo@parque-online.com</a>
       <a href="https://www.instagram.com/parqueonline/" target="_blank" rel="noopener">@parqueonline</a>
     </div>
-    <small>© 2026 Parque Online. Marketing digital local, Rio de Janeiro.</small>
+    <small class="legal">© 2026 Parque Online, agência de marketing digital, CNPJ 61.192.476/0001-66.
+      <a href="privacidade.html">Política de Privacidade</a>
+      <a href="termos.html">Termos de Uso</a>
+      <a href="#cookies" data-cookie-prefs>Preferências de cookies</a>
+    </small>
   </div>
 </footer>
+
+<!-- Aviso de cookies: Aceitar e Recusar com o mesmo destaque -->
+<div class="cookie" id="cookieBar" role="dialog" aria-labelledby="cookieTitle" hidden>
+  <p id="cookieTitle"><strong>Cookies de medição de anúncios</strong></p>
+  <p>Usamos cookies e o Pixel da Meta para medir se os nossos anúncios funcionam. Só carregam se você aceitar. Veja a <a href="privacidade.html">Política de Privacidade</a>.</p>
+  <div class="cookie-actions">
+    <button type="button" class="btn btn--secondary" data-cookie="nao">Recusar</button>
+    <button type="button" class="btn btn--secondary" data-cookie="sim">Aceitar</button>
+  </div>
+</div>
 
 <!-- Barra fixa de WhatsApp (mobile): aparece depois dos resultados, some no CTA final -->
 <div class="sticky-bar" id="stickyBar">
@@ -664,10 +696,51 @@ details .answer{padding:0 0 1.4rem;color:var(--text)}
   window.addEventListener('scroll', onScroll, {passive:true});
   onScroll();
 
-  /* Tracking: evento Contact no Meta Pixel, com a seção do botão */
+  /* Cookies e Pixel da Meta: o pixel só carrega depois do aceite (LGPD, art. 7º, I) */
+  var PIXEL_ID = '';   /* TODO: cole aqui o ID do pixel da Meta (só números) */
+  var CK = 'po_cookies';
+  function getConsent(){ try{ return localStorage.getItem(CK); }catch(e){ return null; } }
+  function setConsent(v){ try{ localStorage.setItem(CK, v); }catch(e){} }
+  function loadPixel(){
+    if(!PIXEL_ID || window.fbq) return;
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', PIXEL_ID); fbq('track','PageView');
+  }
+  function clearFbCookies(){
+    var host = location.hostname.replace(/^www\./,'');
+    ['_fbp','_fbc'].forEach(function(n){
+      document.cookie = n+'=; Max-Age=0; path=/';
+      document.cookie = n+'=; Max-Age=0; path=/; domain='+host;
+      document.cookie = n+'=; Max-Age=0; path=/; domain=.'+host;
+    });
+  }
+  var cookieBar = document.getElementById('cookieBar');
+  function showBar(focus){
+    cookieBar.hidden = false; document.body.classList.add('cookie-open');
+    if(focus){ var b = cookieBar.querySelector('button'); if(b) b.focus(); }
+  }
+  function hideBar(){ cookieBar.hidden = true; document.body.classList.remove('cookie-open'); }
+  var consent = getConsent();
+  if(consent === 'sim'){ loadPixel(); }
+  else if(consent !== 'nao'){ showBar(false); }
+  if(location.hash === '#cookies'){ showBar(true); }
+  window.addEventListener('hashchange', function(){ if(location.hash === '#cookies'){ showBar(true); } });
+  cookieBar.querySelectorAll('[data-cookie]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var v = btn.getAttribute('data-cookie');
+      setConsent(v); hideBar();
+      if(v === 'sim'){ loadPixel(); }
+      else { clearFbCookies(); if(typeof fbq === 'function'){ fbq('consent','revoke'); } }
+    });
+  });
+  document.querySelectorAll('[data-cookie-prefs]').forEach(function(a){
+    a.addEventListener('click', function(e){ e.preventDefault(); showBar(true); });
+  });
+
+  /* Tracking: evento Contact no Meta Pixel, com a seção do botão (só com consentimento) */
   document.querySelectorAll('[data-wa]').forEach(function(a){
     a.addEventListener('click', function(){
-      if(typeof fbq === 'function'){ fbq('track','Contact',{secao:a.getAttribute('data-wa')}); }
+      if(getConsent() === 'sim' && typeof fbq === 'function'){ fbq('track','Contact',{secao:a.getAttribute('data-wa')}); }
     });
   });
 })();

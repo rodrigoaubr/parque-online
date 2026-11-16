@@ -1,0 +1,16 @@
+/* Fontes hospedadas no próprio site (variáveis, subconjunto latino).
+   Evita carregar fontes do Google e enviar o IP do visitante a terceiros. */
+@font-face{
+  font-family:"Bricolage Grotesque";
+  font-style:normal;
+  font-weight:700 800;
+  font-display:swap;
+  src:url("bricolage.woff2") format("woff2");
+}
+@font-face{
+  font-family:"DM Sans";
+  font-style:normal;
+  font-weight:400 600;
+  font-display:swap;
+  src:url("dmsans.woff2") format("woff2");
+}
